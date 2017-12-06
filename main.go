@@ -22,7 +22,9 @@ func (p *Property) CalculateRatio() {
 }
 
 type DataBase struct {
-	properties []*Property
+	comparisonRow int
+	comparisonExp string
+	properties    []*Property
 }
 
 func (db *DataBase) addProperty(name string, col int, exp string) {
@@ -34,7 +36,7 @@ func (db *DataBase) addProperty(name string, col int, exp string) {
 }
 
 func main() {
-	db := DataBase{}
+	db := DataBase{comparisonRow: 1, comparisonExp: "1"}
 	db.addProperty("male", 4, "male")
 	db.addProperty("female", 4, "female")
 
@@ -51,9 +53,9 @@ func main() {
 			for _, p := range db.properties {
 				if row[p.col] == p.exp {
 					p.total++
-					// if row[1] == "1" {
-					// 	p.survived++
-					// }
+					if row[db.comparisonRow] == db.comparisonExp {
+						p.survived++
+					}
 				}
 			}
 		}
