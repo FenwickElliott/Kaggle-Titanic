@@ -9,13 +9,28 @@ import (
 )
 
 type Property struct {
-	// name     string
 	total    int
 	survived int
 	ratio    float64
 }
 
 type DataBase map[string]*Property
+
+func (p *Property) CalculateRatio() {
+	p.ratio = float64(p.survived) / float64(p.total)
+}
+
+func (db *DataBase) CalculateRaios() {
+	for _, v := range *db {
+		v.CalculateRatio()
+	}
+}
+
+func (db DataBase) PrintDB() {
+	for k, v := range db {
+		fmt.Println(k, *v)
+	}
+}
 
 func main() {
 	csvFile, _ := os.Open("./train.csv")
@@ -53,7 +68,6 @@ func main() {
 		}
 	}
 
-	fmt.Println(db["global"])
-	fmt.Println(db["male"])
-	fmt.Println(db["female"])
+	db.CalculateRaios()
+	db.PrintDB()
 }
