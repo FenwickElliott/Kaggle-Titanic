@@ -8,6 +8,13 @@ import (
 	"os"
 )
 
+type DataBase struct {
+	comparisonRow int
+	comparisonExp string
+	properties    []*Property
+	count         int
+}
+
 type Property struct {
 	name     string
 	total    int
@@ -15,16 +22,6 @@ type Property struct {
 	ratio    float64
 	col      int
 	exp      string
-}
-
-func (p *Property) CalculateRatio() {
-	p.ratio = float64(p.survived) / float64(p.total)
-}
-
-type DataBase struct {
-	comparisonRow int
-	comparisonExp string
-	properties    []*Property
 }
 
 func (db *DataBase) addProperty(name string, col int, exp string) {
@@ -35,10 +32,31 @@ func (db *DataBase) addProperty(name string, col int, exp string) {
 	})
 }
 
+func NewDataBase(comparisonRow int, comparisonExp string) *DataBase {
+	temp := DataBase{comparisonRow: comparisonRow, comparisonExp: comparisonExp}
+	temp.addProperty("Global", comparisonRow, comparisonExp)
+	temp.count = -1
+	return &temp
+}
+
+func (p *Property) CalculateRatio() {
+	p.ratio = float64(p.survived) / float64(p.total)
+}
+
+func (db DataBase) Publish() {
+	db.properties[0].total = db.count
+	for _, p := range db.properties {
+		fmt.Println(p.name, p.total, p.survived, float64(p.survived)/float64(p.total))
+	}
+}
+
 func main() {
-	db := DataBase{comparisonRow: 1, comparisonExp: "1"}
-	db.addProperty("male", 4, "male")
-	db.addProperty("female", 4, "female")
+	db := NewDataBase(1, "1")
+	db.addProperty("Male", 4, "male")
+	db.addProperty("Female", 4, "female")
+
+	// Interestingly publish from here does so with a count of -1
+	// defer db.Publish()
 
 	csvFile, _ := os.Open("./train.csv")
 	reader := csv.NewReader(bufio.NewReader(csvFile))
@@ -50,6 +68,7 @@ func main() {
 			fmt.Println(err)
 			fmt.Println(row)
 		} else {
+			db.count++
 			for _, p := range db.properties {
 				if row[p.col] == p.exp {
 					p.total++
@@ -60,7 +79,5 @@ func main() {
 			}
 		}
 	}
-
-	fmt.Println(db.properties[0])
-	fmt.Println(db.properties[1])
+	db.Publish()
 }
